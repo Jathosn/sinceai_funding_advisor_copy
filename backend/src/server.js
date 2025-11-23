@@ -15,6 +15,26 @@ import { inferCompanyBaseMetrics } from "./companyEnrichment.js";
 const app = express();
 const port = process.env.PORT || 4000;
 
+function respondIfAgentMissing(res, error) {
+  if (error?.code === "MISSING_LOOKUP_AGENT") {
+    res.status(500).json({
+      error: "Missing LOOKUP_AGENT configuration",
+      details: "Set LOOKUP_AGENT in backend/.env to enable company lookup."
+    });
+    return true;
+  }
+
+  if (error?.code === "MISSING_FUNDING_ADVISOR_AGENT") {
+    res.status(500).json({
+      error: "Missing FUNDING_ADVISOR_AGENT configuration",
+      details: "Set FUNDING_ADVISOR_AGENT in backend/.env to enable investor match."
+    });
+    return true;
+  }
+
+  return false;
+}
+
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -64,6 +84,7 @@ app.post("/api/company/summary-basic", async (req, res) => {
       source: "openai-gpt-5.1"
     });
   } catch (error) {
+    if (respondIfAgentMissing(res, error)) return;
     // eslint-disable-next-line no-console
     console.error("[api] /summary-basic failed:", error);
     res.status(500).json({ error: "Failed to enrich company information" });
@@ -111,6 +132,7 @@ app.post("/api/company/summary-detailed", async (req, res) => {
       source: "openai-gpt-5.1"
     });
   } catch (error) {
+    if (respondIfAgentMissing(res, error)) return;
     // eslint-disable-next-line no-console
     console.error("[api] /summary-detailed failed:", error);
     res.status(500).json({ error: "Failed to enrich company information" });
@@ -159,6 +181,7 @@ app.post("/api/company/investor-match", async (req, res) => {
       recommendation
     });
   } catch (error) {
+    if (respondIfAgentMissing(res, error)) return;
     // eslint-disable-next-line no-console
     console.error("[api] /company/investor-match failed:", error);
     res.status(500).json({

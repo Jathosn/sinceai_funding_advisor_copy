@@ -280,6 +280,7 @@ function App() {
   const [companyNameSimple, setCompanyNameSimple] = useState("");
   const [simpleOutput, setSimpleOutput] = useState("");
   const [basicLoading, setBasicLoading] = useState(false);
+  const [lookupError, setLookupError] = useState("");
   const [history, setHistory] = useState([]);
   const [expandedCaseId, setExpandedCaseId] = useState(null);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -322,6 +323,8 @@ function App() {
     event.preventDefault();
 
     setBasicLoading(true);
+    setLookupError("");
+
     try {
       const response = await fetch(
         "http://localhost:4000/api/company/summary-basic",
@@ -334,21 +337,23 @@ function App() {
         }
       );
 
+      const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        console.error("Basic summary request failed:", response.status);
+        const baseError =
+          data?.error || "Company lookup failed. Please try again.";
+        const detail = data?.details ? ` (${data.details})` : "";
+        setLookupError(`${baseError}${detail}`);
         return;
       }
 
-      const data = await response.json();
-
-      // Print only the predetermined metrics object to the console
       console.log("Basic company metrics:", data.metrics);
-
-      // Show the summary text in the UI for convenience
       setSimpleOutput(data.summary || "");
+      setLookupError("");
       fetchHistory();
     } catch (error) {
       console.error("Error calling basic summary endpoint:", error);
+      setLookupError("Unexpected error. Check the console for details.");
     } finally {
       setBasicLoading(false);
     }
@@ -727,6 +732,7 @@ function App() {
                 </button>
                 {basicLoading && <span className="button-spinner" aria-hidden />}
               </div>
+              {lookupError && <p className="error-text">{lookupError}</p>}
             </form>
 
             {simpleOutput && (
@@ -778,10 +784,8 @@ function App() {
                   <span className="button-spinner" aria-hidden />
                 )}
               </div>
+              {advisorError && <p className="error-text">{advisorError}</p>}
             </form>
-
-            {advisorError && <p className="error-text">{advisorError}</p>}
-
           </div>
         </section>
 

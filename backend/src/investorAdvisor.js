@@ -6,6 +6,9 @@ import {
   FUNDING_ADVISOR_AGENT
 } from "./openaiClient.js";
 
+const FUNDING_AGENT_MISSING_MESSAGE =
+  "FUNDING_ADVISOR_AGENT prompt is missing. Add it to backend/.env to enable investor searches.";
+
 const EMPTY_RECOMMENDATION = {
   company_name: null,
   country: null,
@@ -98,9 +101,9 @@ const INVESTOR_RECOMMENDATION_JSON_SCHEMA = {
 
 function buildInvestorPrompt(companyProfile) {
   if (!FUNDING_ADVISOR_AGENT) {
-    throw new Error(
-      "FUNDING_ADVISOR_AGENT is not configured. Set it in your backend .env file."
-    );
+    const error = new Error(FUNDING_AGENT_MISSING_MESSAGE);
+    error.code = "MISSING_FUNDING_ADVISOR_AGENT";
+    throw error;
   }
 
   return [

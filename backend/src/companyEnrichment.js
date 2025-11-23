@@ -6,11 +6,14 @@ import {
   LOOKUP_AGENT
 } from "./openaiClient.js";
 
+const LOOKUP_AGENT_MISSING_MESSAGE =
+  "LOOKUP_AGENT prompt is missing. Add it to backend/.env to enable company lookups.";
+
 function buildEnrichmentPrompt(companyName) {
   if (!LOOKUP_AGENT) {
-    throw new Error(
-      "LOOKUP_AGENT is not configured. Set it in your backend .env file."
-    );
+    const error = new Error(LOOKUP_AGENT_MISSING_MESSAGE);
+    error.code = "MISSING_LOOKUP_AGENT";
+    throw error;
   }
 
   return [
