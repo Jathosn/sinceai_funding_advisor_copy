@@ -66,6 +66,28 @@ const EDITABLE_FIELDS = METRIC_SECTIONS.flatMap((section) => section.fields);
 const formatRecommendationJson = (recommendation) =>
   JSON.stringify(recommendation ?? {}, null, 2);
 
+const parseUtcTimestamp = (value) => {
+  if (!value) return null;
+  if (!(typeof value === "string")) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  const trimmed = value.trim();
+  const hasTimezone = /([zZ]|[+-]\d\d:?(\d\d)?)$/.test(trimmed);
+  const isoReady = trimmed.includes("T")
+    ? trimmed
+    : trimmed.replace(" ", "T");
+  const normalized = hasTimezone ? isoReady : `${isoReady}Z`;
+  const parsed = new Date(normalized);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed;
+  }
+
+  const fallback = new Date(trimmed);
+  return Number.isNaN(fallback.getTime()) ? null : fallback;
+};
+
 const FIELD_COLUMN_MAP = {
   business_id: "business_id",
   website_url: "website_url",
@@ -121,11 +143,14 @@ const buildUpdatesPayload = (buffer = {}, metrics = {}) => {
 
 const formatChangeTimestamp = (timestamp) => {
   if (!timestamp) return "—";
+  const date = parseUtcTimestamp(timestamp);
+  if (!date) return timestamp;
+
   try {
     return new Intl.DateTimeFormat("fi-FI", {
       dateStyle: "short",
       timeStyle: "short"
-    }).format(new Date(timestamp));
+    }).format(date);
   } catch (error) {
     return timestamp;
   }
@@ -133,8 +158,9 @@ const formatChangeTimestamp = (timestamp) => {
 
 const formatRelativeTime = (timestamp) => {
   if (!timestamp) return "unknown";
-  const created = new Date(timestamp).getTime();
-  const diffMs = Date.now() - created;
+  const createdAt = parseUtcTimestamp(timestamp);
+  if (!createdAt) return "unknown";
+  const diffMs = Date.now() - createdAt.getTime();
 
   const minutes = Math.floor(diffMs / 60000);
   if (minutes < 60) return "<1 hour ago";
