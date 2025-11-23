@@ -7,5 +7,7 @@
 The .env file should be structured like this:
 
 OPENAI_API_KEY=
+
 LOOKUP_AGENT=`AI agent behavioral logic goes here`
+
 FUNDING_ADVISOR_AGENT=`AI agent behavioral logic goes here`
