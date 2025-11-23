@@ -1,0 +1,24 @@
+# Node / JavaScript
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Environment / secrets
+backend/.env
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.log
+
+.env
+.cursorignore

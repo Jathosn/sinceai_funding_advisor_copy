@@ -1,0 +1,13 @@
+{
+  "name": "sinceai-funding-advisor-root",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm start --prefix backend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
+
+
